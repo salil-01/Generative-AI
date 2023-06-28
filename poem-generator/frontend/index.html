@@ -80,6 +80,10 @@
         .getElementById("generateButton")
         .addEventListener("click", function () {
           const keyword = document.getElementById("keywordInput").value;
+          const poemResult = document.getElementById("poemResult");
+
+          // Show loading state
+          poemResult.innerHTML = "Loading...";
 
           fetch("http://localhost:3000/poem", {
             method: "POST",
@@ -91,11 +95,12 @@
             .then((response) => response.json())
             .then((data) => {
               console.log(data);
-              const poemResult = document.getElementById("poemResult");
-              poemResult.textContent = data.poem;
+
+              poemResult.innerHTML = data.poem.replace(/\n/g, "<br>");
             })
             .catch((error) => {
               console.error("Error generating poem:", error);
+              poemResult.innerHTML = "Failed to generate poem.";
             });
         });
     </script>
