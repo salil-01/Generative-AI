@@ -96,7 +96,7 @@
             .then((data) => {
               console.log(data);
 
-              poemResult.innerHTML = data.poem.replace(/\n/g, "<br>");
+              poemResult.innerHTML = data.res.replace(/\n/g, "<br>");
             })
             .catch((error) => {
               console.error("Error generating poem:", error);

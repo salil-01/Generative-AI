@@ -1,7 +1,7 @@
 const express = require("express");
-const axios = require("axios");
 const rateLimit = require("express-rate-limit");
 const cors = require("cors");
+const { Configuration, OpenAIApi } = require("openai");
 require("dotenv").config();
 
 const app = express();
@@ -15,32 +15,31 @@ const limiter = rateLimit({
 app.use(express.json());
 app.use(cors());
 
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const configuration = new Configuration({
+  apiKey: OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
 // Apply the rate limiter middleware to your route
 app.use("/poem", limiter);
 
 // Your route to generate the poem
 app.post("/poem", async (req, res) => {
   const keyword = req.body.keyword;
-  //   console.log(keyword);
+  // console.log(keyword);
+  let prompt = `Write a Poem on ${keyword} in not more than 30 words`;
   try {
-    const response = await axios.post(
-      "https://api.openai.com/v1/engines/davinci/completions",
-      {
-        prompt: `Write a Poem about ${keyword} in about 30 words`,
-        max_tokens: 100,
-        temperature: 0.57,
-        n: 1,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    const poem = response.data.choices[0].text.trim();
-    res.json({ poem });
+    const response = await openai.createCompletion({
+      model: "text-davinci-003",
+      prompt: prompt,
+      temperature: 0.5,
+      max_tokens: 100,
+      top_p: 1,
+      frequency_penalty: 0.8,
+      presence_penalty: 0,
+    });
+    // console.log(response.data)
+    res.send({ res: response.data.choices[0]?.text.trim() });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Something went wrong" });
